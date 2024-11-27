@@ -3,7 +3,7 @@ import DrumPad from './components/DrumPad.jsx';
 import Display from './components/Display.jsx';
 import Switch from './components/Switch.jsx';
 import VolumeBar from './components/VolumeBar.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 function App() {
   //various state
@@ -13,23 +13,26 @@ function App() {
   const [volume, setVolume] = useState(50);
 
   //Add function to each button that plays the audio file
-  function playAudio(key) {
-    if (power) {
-      //Prevents audio when power is off
-      const drumKey = drumSounds.find(
-        (drum) => drum.keyTrigger === key.toUpperCase() //searches array for object with exact key
-      );
-      if (drumKey) {
-        const audio = document.getElementById(drumKey.keyTrigger);
-        setDisplay(drumKey.id);
-        if (audio) {
-          //if the key exists it selects the audio-element which has id-keytrigger and plays
-          audio.currentTime = 0;
-          audio.play();
+  const playAudio = useCallback(
+    (key) => {
+      if (power) {
+        //Prevents audio when power is off
+        const drumKey = drumSounds.find(
+          (drum) => drum.keyTrigger === key.toUpperCase() //searches array for object with exact key
+        );
+        if (drumKey) {
+          const audio = document.getElementById(drumKey.keyTrigger);
+          setDisplay(drumKey.id);
+          if (audio) {
+            //if the key exists it selects the audio-element which has id-keytrigger and plays
+            audio.currentTime = 0;
+            audio.play();
+          }
         }
       }
-    }
-  }
+    },
+    [power, setDisplay]
+  );
 
   //Add off/on for Power and Bank switches
   function onOff(id) {
@@ -72,7 +75,7 @@ function App() {
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
     };
-  }, []);
+  }, [playAudio]);
 
   return (
     <div
